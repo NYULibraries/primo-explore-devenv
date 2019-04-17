@@ -1,7 +1,7 @@
 x-environment: &x-environment
   PROXY_SERVER: http://bobcatdev.library.nyu.edu:80
   NODE_ENV: ${NODE_ENV-development}
-  VIEW:
+  VIEW: NYU
   VE:
   SAML:
   CAS:
@@ -20,10 +20,9 @@ x-defaults: &x-defaults
   ports:
     - 8004:8004
     - 3001:3001
-  # volumes:
-  # - ./gulp:/app/gulp/
+  volumes:
   # - ./webpack:/app/webpack/
-  # - /path/to/primo-explore:/app/primo-explore
+  - /Users/elliott/repos/primo-explore-views:/app/primo-explore
 
 version: '3.7'
 services:
@@ -31,6 +30,7 @@ services:
     <<: *x-defaults
     environment:
       <<: *x-environment
+
   create-package:
     <<: *x-defaults
     environment:
@@ -47,10 +47,6 @@ services:
     ports:
     - 8003:8003
     - 3001:3001
-  # volumes:
-  # - ./gulp:/app/gulp/
-  # - ./webpack:/app/webpack/
-  # - /path/to/primo-explore:/app/primo-explore
 
   create-package-gulp-legacy:
     <<: *x-defaults
@@ -63,8 +59,4 @@ services:
     command: yarn create-package --view=${VIEW}
     depends_on:
       - web-gulp-legacy
-  # volumes:
-  # - ./gulp:/app/gulp/
-  # - ./webpack:/app/webpack/
-  # - /path/to/primo-explore:/app/primo-explore
 
