@@ -175,11 +175,10 @@ const baseWebpackConfig = basePath => merge.smart(
 );
 
 const centralPackageConfig = VIEW !== 'CENTRAL_PACKAGE' && fs.existsSync(centralPackagePath) ?
-  [merge.smart(
+  merge.smart(
     baseWebpackConfig(centralPackagePath),
     viewWebpackOverride(centralPackagePath)
-  )]
-  : [];
+  ) : undefined;
 
 module.exports = [
   merge.smart(
@@ -187,7 +186,7 @@ module.exports = [
     { devServer },
     viewWebpackOverride(viewPath)
   ),
-  ...centralPackageConfig
+  ...(centralPackageConfig ? [centralPackageConfig] : [])
 ];
 
 
