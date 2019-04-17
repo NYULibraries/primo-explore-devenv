@@ -17,7 +17,10 @@ RUN cd /tmp && yarn install --frozen-lockfile --ignore-optional \
 
 WORKDIR $INSTALL_PATH
 
-ADD . .
+ADD webpack.config.js package.json yarn.lock ./
+ADD webpack/ ./webpack/
+ADD images/ ./images/
+ADD gulp/primoProxy.js gulp/config.js ./gulp/
 
 EXPOSE 8004 3001
 

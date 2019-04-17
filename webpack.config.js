@@ -70,7 +70,7 @@ const viewWebpack = fs.existsSync(resolveViewPath('webpack.config.js')) ?
   require(resolveViewPath('webpack.config.js'))
   : {};
 
-module.exports = merge.smart(
+const viewWebpackConfig = merge.smart(
   {
     mode: deploymentMode ? 'production' : 'development',
     context: resolveViewPath(),
@@ -129,7 +129,7 @@ module.exports = merge.smart(
         // list of absolute paths; includes subdirectories for better file watching
         resolveDevEnv('./primo-explore'),
         ...(VIEW !== 'CENTRAL_PACKAGE' ? ['./html', './js', './img', './css'].map(dir => resolveViewPath(dir)) : []),
-        ...['./html', './js', './img', './css'].map(dir => resolveCentralPackagePath(dir))
+        ...(fs.existsSync(resolveCentralPackagePath()) ? ['./html', './js', './img', './css'].map(dir => resolveCentralPackagePath(dir)) : [])
       ],
       watchContentBase: true,
       compress: false,
@@ -149,5 +149,17 @@ module.exports = merge.smart(
   },
   viewWebpack,
 );
+
+const centralPackageWebpackConfig = merge.smart(
+  viewWebpackConfig,
+  {
+    context: resolveCentralPackagePath(),
+  }
+);
+
+module.exports = [
+  viewWebpackConfig,
+  ...(VIEW !== 'CENTRAL_PACKAGE' && fs.existsSync(resolveCentralPackagePath()) ? [centralPackageWebpackConfig] : []),
+];
 
 
