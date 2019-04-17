@@ -59,21 +59,26 @@ const basePlugins = basePath => [
         },
         {
           copy: [{
-              source: path.resolve(basePath, `./html/**/*.html`),
+              source: resolveViewPath(`./html/**/*.html`),
               destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/html`)
             },
             {
-              source: path.resolve(basePath, `./img/**/*.{jpg,gif,png}`),
+              source: resolveViewPath(`./img/**/*.{jpg,gif,png}`),
               destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/img`)
             },
             {
-              source: path.resolve(basePath, `./dist/css/**/*.{js,css}`),
+              source: resolveViewPath(`./dist/css/**/*.{js,css}`),
               destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/css`)
             },
             {
-              source: path.resolve(basePath, `./dist/js/**/*.js`),
+              source: resolveViewPath(`./dist/js/**/*.js`),
               destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/js`)
             },
+          ]
+        },
+        {
+          mkdir: [
+            resolveDevEnv('./packages/'),
           ]
         },
         {
@@ -186,7 +191,7 @@ module.exports = [
     { devServer },
     viewWebpackOverride(viewPath)
   ),
-  ...(centralPackageConfig ? [centralPackageConfig] : [])
+  ...(centralPackageConfig && !PACK ? [centralPackageConfig] : [])
 ];
 
 
