@@ -4,8 +4,10 @@ NODE_ENV = NODE_ENV || 'production';
 const path = require('path');
 const fs = require('fs');
 const resolveDevEnv = (...args) => path.join(__dirname, ...args);
-const resolveViewPath = (...args) => resolveDevEnv(`./primo-explore/custom/${VIEW}`, ...args);
-const resolveCentralPackagePath = (...args) => resolveDevEnv(`./primo-explore/custom/CENTRAL_PACKAGE`, ...args);
+const viewPath = resolveDevEnv(`./primo-explore/custom/${VIEW}`);
+const centralPackagePath = resolveDevEnv(`./primo-explore/custom/CENTRAL_PACKAGE`);
+const resolveViewPath = (...args) => path.resolve(viewPath, ...args);
+const resolveCentralPackagePath = (...args) => path.resolve(centralPackagePath, ...args);
 const { DefinePlugin } = require('webpack');
 const ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
 const FileManagerPlugin = require('filemanager-webpack-plugin');
@@ -18,14 +20,14 @@ const stagingMode = NODE_ENV === 'staging';
 const deploymentMode = prodMode || testMode || stagingMode;
 
 const devPlugins = [
-  // add development-only plugins heres
+  // plugins for development environment only
 ];
 
 const deploymentPlugins = [
   // plugins for production/deployment environment
 ];
 
-const plugins = [
+const basePlugins = basePath => [
   new DefinePlugin({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
   }),
@@ -35,52 +37,94 @@ const plugins = [
   new FileManagerPlugin({
     onEnd: [
       // copy from temporary dist/ directory to appropriate public paths
-      {copy: [
-        { source: resolveViewPath(`./dist/css/**/custom1*.{js,css}`), destination: resolveViewPath(`./css`) },
-        { source: resolveViewPath(`./dist/js/**/custom*.js`), destination: resolveViewPath(`./js`) },
-      ]},
+      {
+        copy: [{
+            source: path.join(basePath, `./dist/css/**/custom1*.{js,css}`),
+            destination: path.join(basePath, `./css/`)
+          },
+          {
+            source: path.join(basePath, `./dist/js/**/custom*.js`),
+            destination: path.join(basePath, `./js/`)
+          },
+        ]
+      },
     ],
   }),
-  ...(deploymentMode ? deploymentPlugins : devPlugins),
   ...(PACK === 'true' ? [
-  new FileManagerPlugin({
-    onEnd: [
+    new FileManagerPlugin({
+      onEnd: [
         // move important files to /tmp for zipping
-        {mkdir: [`./`, `./html/`, `./img/`, `./css/`, `./js`].map(dir => resolveDevEnv(`./primo-explore/tmp/${VIEW}`, dir)) },
-        {copy: [
-          { source: resolveViewPath(`./html/**/*.html`), destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/html`) },
-          { source: resolveViewPath(`./img/**/*.{jpg,gif,png}`), destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/img`) },
-          { source: resolveViewPath(`./dist/css/**/*.{js,css}`), destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/css`) },
-          { source: resolveViewPath(`./dist/js/**/*.js`), destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/js`) },
-        ]},
-        {archive: [
-          {
+        {
+          mkdir: [`./`, `./html/`, `./img/`, `./css/`, `./js`].map(dir => resolveDevEnv(`./primo-explore/tmp/${VIEW}`, dir))
+        },
+        {
+          copy: [{
+              source: path.resolve(basePath, `./html/**/*.html`),
+              destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/html`)
+            },
+            {
+              source: path.resolve(basePath, `./img/**/*.{jpg,gif,png}`),
+              destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/img`)
+            },
+            {
+              source: path.resolve(basePath, `./dist/css/**/*.{js,css}`),
+              destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/css`)
+            },
+            {
+              source: path.resolve(basePath, `./dist/js/**/*.js`),
+              destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/js`)
+            },
+          ]
+        },
+        {
+          archive: [{
             source: resolveDevEnv(`./primo-explore/tmp/`),
             destination: resolveDevEnv(`./packages/${VIEW}.${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 12) }.${prodMode ? 'production' : NODE_ENV }.zip`)
-          }
-        ]},
-        { delete: [resolveDevEnv(`./primo-explore/tmp/${VIEW}`)]}
+          }]
+        },
+        {
+          delete: [resolveDevEnv(`./primo-explore/tmp/${VIEW}`)]
+        }
       ]
     })
   ] : []),
 ];
 
 // merges in webpack.config.js in the VIEW folder, if it exists
-const viewWebpack = fs.existsSync(resolveViewPath('webpack.config.js')) ?
-  require(resolveViewPath('webpack.config.js'))
+const viewWebpackOverride = basePath => fs.existsSync(path.resolve(basePath, 'webpack.config.js')) ?
+  require(path.resolve(basePath, 'webpack.config.js'))
   : {};
 
-const viewWebpackConfig = merge.smart(
+// devServer settings
+const devServer = {
+  contentBase: resolveDevEnv('./primo-explore'),
+  watchContentBase: true,
+  compress: false,
+  port: 8004,
+  before: app => {
+    require('./webpack/loadPrimoMiddlewares')(app);
+  },
+  writeToDisk: filePath => {
+    // filePath is an absolute path to the emitted file from the devServer.
+    const isCustomJS = /custom\.(js$|js\.map\.js$)/.test(filePath);
+    const isCustomCSS = /custom1\.(css$|css\.map\.js$)/.test(filePath);
+    (isCustomJS || isCustomCSS) ? console.log('emitted -- ', filePath): null;
+    return isCustomJS || isCustomCSS;
+  },
+  disableHostCheck: !prodMode,
+};
+
+const baseWebpackConfig = basePath => merge.smart(
   {
     mode: deploymentMode ? 'production' : 'development',
-    context: resolveViewPath(),
+    context: basePath,
     entry: {
       'js/custom.js': './js/main.js',
       // this is the intermediary file before extract-css-chunks takes over
-      'css/main.css-module': './css/sass/main.scss',
+      'css/main.module.css': './css/sass/main.scss',
     },
     output: {
-      path: resolveViewPath('./dist/'),
+      path: path.resolve(basePath, './dist/'),
       filename: '[name]',
       // ends all maps with map.js to overcome Primo's asset restrictions
       sourceMapFilename: '[file].map.js'
@@ -123,43 +167,27 @@ const viewWebpackConfig = merge.smart(
         }
       ],
     },
-    plugins,
-    devServer: {
-      contentBase: [
-        // list of absolute paths; includes subdirectories for better file watching
-        resolveDevEnv('./primo-explore'),
-        ...(VIEW !== 'CENTRAL_PACKAGE' ? ['./html', './js', './img', './css'].map(dir => resolveViewPath(dir)) : []),
-        ...(fs.existsSync(resolveCentralPackagePath()) ? ['./html', './js', './img', './css'].map(dir => resolveCentralPackagePath(dir)) : [])
-      ],
-      watchContentBase: true,
-      compress: false,
-      port: 8004,
-      before: app => {
-        require('./webpack/loadPrimoMiddlewares')(app);
-      },
-      writeToDisk: filePath => {
-        // filePath is an absolute path to the emitted file from the devServer.
-        const isCustomJS = /custom\.(js$|js\.map\.js$)/.test(filePath);
-        const isCustomCSS = /custom1\.(css$|css\.map\.js$)/.test(filePath);
-        (isCustomJS || isCustomCSS) ? console.log('emitted -- ', filePath) : null;
-        return isCustomJS || isCustomCSS;
-      },
-      disableHostCheck: !prodMode,
-    }
-  },
-  viewWebpack,
-);
-
-const centralPackageWebpackConfig = merge.smart(
-  viewWebpackConfig,
-  {
-    context: resolveCentralPackagePath(),
+    plugins: [
+      ...basePlugins(basePath),
+      ...(deploymentMode ? deploymentPlugins : devPlugins),
+    ],
   }
 );
 
+const centralPackageConfig = VIEW !== 'CENTRAL_PACKAGE' && fs.existsSync(centralPackagePath) ?
+  [merge.smart(
+    baseWebpackConfig(centralPackagePath),
+    viewWebpackOverride(centralPackagePath)
+  )]
+  : [];
+
 module.exports = [
-  viewWebpackConfig,
-  ...(VIEW !== 'CENTRAL_PACKAGE' && fs.existsSync(resolveCentralPackagePath()) ? [centralPackageWebpackConfig] : []),
+  merge.smart(
+    baseWebpackConfig(viewPath),
+    { devServer },
+    viewWebpackOverride(viewPath)
+  ),
+  ...centralPackageConfig
 ];
 
 

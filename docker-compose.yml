@@ -21,8 +21,7 @@ x-defaults: &x-defaults
     - 8004:8004
     - 3001:3001
   volumes:
-  # - ./webpack:/app/webpack/
-  - /Users/elliott/repos/primo-explore-views:/app/primo-explore
+  # - /path/to/primo-explore:/app/primo-explore
 
 version: '3.7'
 services:
