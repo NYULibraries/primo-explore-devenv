@@ -7,14 +7,12 @@ const resolveDevEnv = (...args) => path.join(__dirname, ...args);
 const viewPath = resolveDevEnv(`./primo-explore/custom/${VIEW}`);
 const centralPackagePath = resolveDevEnv(`./primo-explore/custom/CENTRAL_PACKAGE`);
 const resolveViewPath = (...args) => path.resolve(viewPath, ...args);
-const resolveCentralPackagePath = (...args) => path.resolve(centralPackagePath, ...args);
 const { DefinePlugin } = require('webpack');
 const ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const merge = require('webpack-merge');
 
 const prodMode = NODE_ENV === 'production';
-const devMode = NODE_ENV === 'development';
 const testMode = NODE_ENV === 'test';
 const stagingMode = NODE_ENV === 'staging';
 const deploymentMode = prodMode || testMode || stagingMode;
@@ -141,6 +139,25 @@ const baseWebpackConfig = basePath => merge.smart(
           test: /\.js$/,
           exclude: /node_modules/,
           loader: 'babel-loader',
+          options: {
+            "presets": [
+              ["@babel/preset-env", {
+                targets: {
+                  browsers: [
+                    ">.25%",
+                    "not dead",
+                    "ie >= 11",
+                  ]
+                },
+                useBuiltIns: "usage"
+              }]
+            ],
+            plugins: [
+              "transform-html-import-to-string",
+              "@babel/plugin-transform-runtime",
+            ],
+            sourceMaps: "both"
+          }
         },
         {
           test: /\.(sa|sc|c)ss$/,
@@ -161,15 +178,15 @@ const baseWebpackConfig = basePath => merge.smart(
             },
           ],
         },
-        {
-          test: /\.html$/,
-          use: {
-            loader: 'file-loader',
-            options: {
-              name: '../html/[name].[ext]',
-            }
-          },
-        }
+        // {
+        //   test: /\.html$/,
+        //   use: {
+        //     loader: 'file-loader',
+        //     options: {
+        //       name: '../html/[name].[ext]',
+        //     }
+        //   },
+        // }
       ],
     },
     plugins: [
