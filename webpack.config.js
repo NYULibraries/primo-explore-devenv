@@ -103,7 +103,9 @@ const devServer = {
   contentBase: resolveDevEnv('./primo-explore'),
   watchContentBase: true,
   compress: false,
+  host: '0.0.0.0',
   port: 8004,
+  hot: !deploymentMode,
   before: app => {
     require('./webpack/loadPrimoMiddlewares')(app);
   },
@@ -178,15 +180,6 @@ const baseWebpackConfig = basePath => merge.smart(
             },
           ],
         },
-        // {
-        //   test: /\.html$/,
-        //   use: {
-        //     loader: 'file-loader',
-        //     options: {
-        //       name: '../html/[name].[ext]',
-        //     }
-        //   },
-        // }
       ],
     },
     plugins: [
@@ -199,7 +192,7 @@ const baseWebpackConfig = basePath => merge.smart(
 const centralPackageConfig = VIEW !== 'CENTRAL_PACKAGE' && fs.existsSync(centralPackagePath) ?
   merge.smart(
     baseWebpackConfig(centralPackagePath),
-    viewWebpackOverride(centralPackagePath)
+    viewWebpackOverride(centralPackagePath),
   ) : undefined;
 
 module.exports = [
