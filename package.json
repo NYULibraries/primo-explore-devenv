@@ -1,6 +1,6 @@
 {
   "name": "primo-explore-devenv",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "The Exlibris Primo Open Discovery Framework",
   "author": "noamamit92",
   "devDependencies": {
@@ -19,9 +19,9 @@
     "glob": "6.0.4",
     "node-sass": "^4.11.0",
     "sass-loader": "^7.1.0",
-    "webpack": "^4.29.3",
-    "webpack-cli": "^3.2.3",
-    "webpack-dev-server": "^3.1.14",
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.2",
+    "webpack-dev-server": "^3.3.1",
     "webpack-merge": "^4.2.1"
   },
   "engines": {
@@ -31,7 +31,7 @@
   "scripts": {
     "build": "yarn webpack",
     "start": "yarn start:dev",
-    "start:dev": "webpack-dev-server --host 0.0.0.0",
+    "start:dev": "webpack-dev-server",
     "create-package": "PACK='true' yarn webpack"
   },
   "optionalDependencies": {
