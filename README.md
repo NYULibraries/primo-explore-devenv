@@ -118,28 +118,36 @@ This docker image is intended for usage within other view package repositories. 
 #### Example
 
 ```dockerfile
-FROM quay.io/nyulibraries/primo-explore-devenv:latest
+FROM quay.io/nyulibraries/primo-explore-devenv:1.1.1
 
-# A url or directory refrence to a zipped CENTRAL_PACkAGE
-ARG CENTRAL_PACKAGE_RELEASE
+ENV VIEW NYU
+ENV DEVENV_PATH /app
 
-ENV DEVENV_PATH /app/
-ENV CUSTOM_PACKAGE_PATH /app/primo-explore/custom/
-ENV CUSTOM_VIEW_PATH ${CUSTOM_PACKAGE_PATH}/NYU
+WORKDIR /app/primo-explore/
 
-## Adds central package to image
-WORKDIR ${CUSTOM_PACKAGE_PATH}
-ADD ${CENTRAL_PACKAGE_RELEASE} .
-RUN unzip CENTRAL_PACKAGE.zip && rm CENTRAL_PACKAGE.zip
+# Installs Node modules, along with inner repository node_modules
+COPY yarn.lock package.json ./
+COPY custom/CENTRAL_PACKAGE/package.json ./custom/CENTRAL_PACKAGE/package.json
+COPY custom/NYU/package.json ./custom/NYU/package.json
+COPY custom/NYUAD/package.json ./custom/NYUAD/package.json
+COPY custom/NYUSH/package.json ./custom/NYUSH/package.json
+COPY custom/NYSID/package.json ./custom/NYSID/package.json
+COPY custom/NYHS/package.json ./custom/NYHS/package.json
+COPY custom/BHS/package.json ./custom/BHS/package.json
+COPY custom/CU/package.json ./custom/CU/package.json
 
-# Adds NYU files to image
-WORKDIR ${CUSTOM_VIEW_PATH}
-ADD . .
+# Installs production version of dependencies from NPM
+RUN yarn install --prod --frozen-lockfile --ignore-optional && yarn cache clean
 
-## Sets up for running as a container
+# Copies remaining VIEW files
+COPY ./custom/ ./custom/
+
+# Sets up for running as a container
 WORKDIR ${DEVENV_PATH}
+
 EXPOSE 8004 3001
-CMD yarn start
+
+# CMD not necessary: inherited from devenv
 ```
 
 ## Build a Package
