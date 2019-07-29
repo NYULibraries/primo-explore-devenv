@@ -138,28 +138,14 @@ const baseWebpackConfig = basePath => merge.smart(
     module: {
       rules: [
         {
-          test: /\.js$/,
+          test: /\.js$/i,
           exclude: /node_modules/,
           loader: 'babel-loader',
-          options: {
-            "presets": [
-              ["@babel/preset-env", {
-                targets: {
-                  browsers: [
-                    ">.25%",
-                    "not dead",
-                    "ie >= 11",
-                  ]
-                },
-                useBuiltIns: "usage"
-              }]
-            ],
-            plugins: [
-              "transform-html-import-to-string",
-              "@babel/plugin-transform-runtime",
-            ],
-            sourceMaps: "both"
-          }
+        },
+        {
+          test: /\.html$/i,
+          exclude: /node_modules/,
+          loader: 'raw-loader',
         },
         {
           test: /\.(sa|sc|c)ss$/,
