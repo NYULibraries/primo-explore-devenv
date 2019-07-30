@@ -1,6 +1,6 @@
 {
   "name": "primo-explore-devenv",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "The Exlibris Primo Open Discovery Framework",
   "author": "noamamit92",
   "devDependencies": {
@@ -10,14 +10,13 @@
     "@babel/preset-env": "^7.5.0",
     "@babel/runtime": "^7.5.0",
     "babel-loader": "^8.0.5",
-    "babel-plugin-transform-html-import-to-string": "0.0.1",
     "connect-modrewrite": "0.8.2",
     "core-js": "^3.1.4",
     "css-loader": "^3.1.0",
-    "extract-css-chunks-webpack-plugin": "^4.5.6",
     "file-loader": "^4.1.0",
     "filemanager-webpack-plugin": "^2.0.5",
     "glob": "7.1.4",
+    "mini-css-extract-plugin": "^0.8.0",
     "node-sass": "^4.12.0",
     "raw-loader": "^3.1.0",
     "sass-loader": "^7.1.0",
