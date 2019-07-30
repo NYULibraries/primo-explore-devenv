@@ -32,24 +32,24 @@ const packPlugins = [
     onEnd: [
       // move important files to /tmp for zipping
       {
-        mkdir: [`./`, `./html/`, `./img/`, `./css/`, `./js`].map(dir => resolveDevEnv(`./primo-explore/tmp/${VIEW}`, dir))
+        mkdir: [`./`, `./html/`, `./img/`, `./css/`, `./js`].map(dir => resolveDevEnv(`./tmp/${VIEW}`, dir))
       },
       {
         copy: [{
             source: resolveViewPath(`./html/**/home*.html`),
-            destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/html`)
+            destination: resolveDevEnv(`./tmp/${VIEW}/html`)
           },
           {
             source: resolveViewPath(`./img/**/*.{jpg,gif,png}`),
-            destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/img`)
+            destination: resolveDevEnv(`./tmp/${VIEW}/img`)
           },
           {
             source: resolveViewPath(`./css/**/custom1.css`),
-            destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/css`)
+            destination: resolveDevEnv(`./tmp/${VIEW}/css`)
           },
           {
             source: resolveViewPath(`./js/**/custom.js`),
-            destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/js`)
+            destination: resolveDevEnv(`./tmp/${VIEW}/js`)
           },
         ]
       },
@@ -60,12 +60,12 @@ const packPlugins = [
       },
       {
         archive: [{
-          source: resolveDevEnv(`./primo-explore/tmp/`),
+          source: resolveDevEnv(`./tmp/`),
           destination: resolveDevEnv(`./packages/${VIEW}.${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 12) }.${prodMode ? 'production' : NODE_ENV }.zip`)
         }]
       },
       {
-        delete: [resolveDevEnv(`./primo-explore/tmp/${VIEW}`)]
+        delete: [resolveDevEnv(`./tmp/${VIEW}`)]
       }
     ]
   })
