@@ -1,7 +1,7 @@
 x-environment: &x-environment
   PROXY_SERVER: http://bobcatdev.library.nyu.edu:80
   NODE_ENV: ${NODE_ENV-development}
-  VIEW: NYU
+  VIEW: ${VIEW-NYU}
   VE:
   SAML:
   CAS:

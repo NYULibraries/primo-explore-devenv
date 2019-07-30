@@ -8,10 +8,12 @@ const viewPath = resolveDevEnv(`./primo-explore/custom/${VIEW}`);
 const centralPackagePath = resolveDevEnv(`./primo-explore/custom/CENTRAL_PACKAGE`);
 const resolveViewPath = (...args) => path.resolve(viewPath, ...args);
 const { DefinePlugin } = require('webpack');
-const ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const merge = require('webpack-merge');
 
+const isPackage = PACK === 'true';
+const devMode = NODE_ENV === 'development';
 const prodMode = NODE_ENV === 'production';
 const testMode = NODE_ENV === 'test';
 const stagingMode = NODE_ENV === 'staging';
@@ -25,72 +27,57 @@ const deploymentPlugins = [
   // plugins for production/deployment environment
 ];
 
-const basePlugins = basePath => [
-  new DefinePlugin({
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
-  }),
-  new ExtractCssChunks({
-    filename: 'css/custom1.css',
-  }),
+const packPlugins = [
   new FileManagerPlugin({
     onEnd: [
-      // copy from temporary dist/ directory to appropriate public paths
+      // move important files to /tmp for zipping
+      {
+        mkdir: [`./`, `./html/`, `./img/`, `./css/`, `./js`].map(dir => resolveDevEnv(`./tmp/${VIEW}`, dir))
+      },
       {
         copy: [{
-            source: path.join(basePath, `./dist/css/**/custom1*.{js,css}`),
-            destination: path.join(basePath, `./css/`)
+            source: resolveViewPath(`./html/**/home*.html`),
+            destination: resolveDevEnv(`./tmp/${VIEW}/html`)
           },
           {
-            source: path.join(basePath, `./dist/js/**/custom*.js`),
-            destination: path.join(basePath, `./js/`)
+            source: resolveViewPath(`./img/**/*.{jpg,gif,png}`),
+            destination: resolveDevEnv(`./tmp/${VIEW}/img`)
+          },
+          {
+            source: resolveViewPath(`./css/**/custom1.css`),
+            destination: resolveDevEnv(`./tmp/${VIEW}/css`)
+          },
+          {
+            source: resolveViewPath(`./js/**/custom.js`),
+            destination: resolveDevEnv(`./tmp/${VIEW}/js`)
           },
         ]
       },
-    ],
+      {
+        mkdir: [
+          resolveDevEnv('./packages/'),
+        ]
+      },
+      {
+        archive: [{
+          source: resolveDevEnv(`./tmp/`),
+          destination: resolveDevEnv(`./packages/${VIEW}.${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 12) }.${prodMode ? 'production' : NODE_ENV }.zip`)
+        }]
+      },
+      {
+        delete: [resolveDevEnv(`./tmp/${VIEW}`)]
+      }
+    ]
+  })
+];
+
+const basePlugins = [
+  new DefinePlugin({
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
   }),
-  ...(PACK === 'true' ? [
-    new FileManagerPlugin({
-      onEnd: [
-        // move important files to /tmp for zipping
-        {
-          mkdir: [`./`, `./html/`, `./img/`, `./css/`, `./js`].map(dir => resolveDevEnv(`./primo-explore/tmp/${VIEW}`, dir))
-        },
-        {
-          copy: [{
-              source: resolveViewPath(`./html/**/*.html`),
-              destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/html`)
-            },
-            {
-              source: resolveViewPath(`./img/**/*.{jpg,gif,png}`),
-              destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/img`)
-            },
-            {
-              source: resolveViewPath(`./dist/css/**/*.{js,css}`),
-              destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/css`)
-            },
-            {
-              source: resolveViewPath(`./dist/js/**/*.js`),
-              destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/js`)
-            },
-          ]
-        },
-        {
-          mkdir: [
-            resolveDevEnv('./packages/'),
-          ]
-        },
-        {
-          archive: [{
-            source: resolveDevEnv(`./primo-explore/tmp/`),
-            destination: resolveDevEnv(`./packages/${VIEW}.${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 12) }.${prodMode ? 'production' : NODE_ENV }.zip`)
-          }]
-        },
-        {
-          delete: [resolveDevEnv(`./primo-explore/tmp/${VIEW}`)]
-        }
-      ]
-    })
-  ] : []),
+  new MiniCssExtractPlugin({
+    filename: 'css/custom1.css',
+  }),
 ];
 
 // merges in webpack.config.js in the VIEW folder, if it exists
@@ -101,19 +88,20 @@ const viewWebpackOverride = basePath => fs.existsSync(path.resolve(basePath, 'we
 // devServer settings
 const devServer = {
   contentBase: resolveDevEnv('./primo-explore'),
-  watchContentBase: true,
   compress: false,
   host: '0.0.0.0',
   port: 8004,
-  hot: !deploymentMode,
+  hot: false,
   before: app => {
     require('./webpack/loadPrimoMiddlewares')(app);
   },
-  writeToDisk: filePath => {
+  writeToDisk: (filePath) => {
     // filePath is an absolute path to the emitted file from the devServer.
-    const isCustomJS = /custom\.(js$|js\.map\.js$)/.test(filePath);
-    const isCustomCSS = /custom1\.(css$|css\.map\.js$)/.test(filePath);
-    (isCustomJS || isCustomCSS) ? console.log('emitted -- ', filePath): null;
+    const isCustomJS = /custom\.js$/.test(filePath);
+    const isCustomCSS = /custom1\.css$/.test(filePath);
+    if (isCustomJS || isCustomCSS) {
+      console.log('emitted -- ', filePath);
+    }
     return isCustomJS || isCustomCSS;
   },
   disableHostCheck: !prodMode,
@@ -125,57 +113,43 @@ const baseWebpackConfig = basePath => merge.smart(
     context: basePath,
     entry: {
       'js/custom.js': './js/main.js',
-      // this is the intermediary file before extract-css-chunks takes over
-      'css/main.module.css': './css/sass/main.scss',
     },
     output: {
-      path: path.resolve(basePath, './dist/'),
+      path: path.resolve(basePath),
       filename: '[name]',
-      // ends all maps with map.js to overcome Primo's asset restrictions
-      sourceMapFilename: '[file].map.js'
     },
-    devtool: 'source-map',
+    devtool: devMode ? 'eval-source-map' : undefined,
     module: {
       rules: [
         {
-          test: /\.js$/,
+          test: /\.js$/i,
           exclude: /node_modules/,
           loader: 'babel-loader',
-          options: {
-            "presets": [
-              ["@babel/preset-env", {
-                targets: {
-                  browsers: [
-                    ">.25%",
-                    "not dead",
-                    "ie >= 11",
-                  ]
-                },
-                useBuiltIns: "usage"
-              }]
-            ],
-            plugins: [
-              "transform-html-import-to-string",
-              "@babel/plugin-transform-runtime",
-            ],
-            sourceMaps: "both"
-          }
+        },
+        {
+          test: /\.html$/i,
+          exclude: /node_modules/,
+          loader: 'raw-loader',
         },
         {
           test: /\.(sa|sc|c)ss$/,
           use: [
-            ExtractCssChunks.loader,
+            {
+              loader: MiniCssExtractPlugin.loader,
+            },
             'css-loader',
             'sass-loader',
           ]
         },
         {
-          test: /\.jpe?g$|\.gif$|\.png$/i,
+          test: /\.jpe?g$|\.gif$|\.png|\.ico$/i,
           use: [
             {
               loader: 'file-loader',
               options: {
-                name: '../img/[name].[ext]',
+                publicPath: '../img',
+                outputPath: 'img',
+                name: '[name].[ext]',
               }
             },
           ],
@@ -183,7 +157,8 @@ const baseWebpackConfig = basePath => merge.smart(
       ],
     },
     plugins: [
-      ...basePlugins(basePath),
+      ...basePlugins,
+      ...(PACK === 'true' ? packPlugins : []),
       ...(deploymentMode ? deploymentPlugins : devPlugins),
     ],
   }
@@ -198,10 +173,10 @@ const centralPackageConfig = VIEW !== 'CENTRAL_PACKAGE' && fs.existsSync(central
 module.exports = [
   merge.smart(
     baseWebpackConfig(viewPath),
-    { devServer },
+    !isPackage ? { devServer } : {},
     viewWebpackOverride(viewPath)
   ),
-  ...(centralPackageConfig && !PACK ? [centralPackageConfig] : [])
+  ...(centralPackageConfig && !isPackage ? [centralPackageConfig] : [])
 ];
 
 

@@ -41,25 +41,16 @@ Within the [docker network](https://docs.docker.com/network/), this will be acco
 
 ## JS, (S)CSS, & HTML
 
-All imports of JavaScript and (S)CSS will occur as `import` statements in your `js/main.js` or `@import` statements in `css/sass/main.scss` files. These are resolved by the `webpack` bundler with assets generated. `js/main.js` and`css/sass/main.scss` files are considered webpack's `entry` files.
+`js/main.js` is considered webpack's entry file. All imports of JavaScript and (S)CSS will occur as `import` statements in your `js/main.js`. Ensure at least one CSS is included in the entry file! If you *do not* include CSS, the Primo server will fail as the necessary `custom1.css` will not output!
 
 To use HTML as a JavaScript `String` in your code (e.g. for an Angular.js template), `import` and use in your `main.js`
 
-#### Example
-
-```scss
-/* main.scss */
-/* import local sass */
-@import 'variables';
-
-/* import relative CSS files */
-@import '../css/app-colors.css';
-
-/* Manually import css assets that are delivered with NPM modules */
-@import '~primo-explore-libraryh3lp-widget/css/custom1.css';
-```
+### Example
 
 ```js
+/* Import styles */
+import '../css/sass/main.scss';
+
 /* Import any node dependencies */
 import 'primo-explore-libraryh3lp-widget';
 
@@ -80,8 +71,20 @@ app
   });
 ```
 
+```scss
+/* main.scss */
+/* import local sass */
+@import 'variables';
+
+/* import relative CSS files */
+@import '../css/app-colors.css';
+
+/* Manually import css assets that are delivered with NPM modules */
+@import '~primo-explore-libraryh3lp-widget/css/custom1.css';
+```
+
 Tree:
-```sh
+```
 ├── primo-explore
 │   ├── custom
 │   │   ├── NYU
