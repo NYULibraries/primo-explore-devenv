@@ -146,7 +146,9 @@ const baseWebpackConfig = basePath => merge.smart(
             {
               loader: 'file-loader',
               options: {
-                name: './img/[name].[ext]',
+                publicPath: '../img',
+                outputPath: 'img',
+                name: '[name].[ext]',
               }
             },
           ],
