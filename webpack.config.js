@@ -12,6 +12,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const merge = require('webpack-merge');
 
+const isPackage = PACK === 'true';
 const devMode = NODE_ENV === 'development';
 const prodMode = NODE_ENV === 'production';
 const testMode = NODE_ENV === 'test';
@@ -172,10 +173,10 @@ const centralPackageConfig = VIEW !== 'CENTRAL_PACKAGE' && fs.existsSync(central
 module.exports = [
   merge.smart(
     baseWebpackConfig(viewPath),
-    !PACK ? { devServer } : {},
+    !isPackage ? { devServer } : {},
     viewWebpackOverride(viewPath)
   ),
-  ...(centralPackageConfig && !PACK ? [centralPackageConfig] : [])
+  ...(centralPackageConfig && !isPackage ? [centralPackageConfig] : [])
 ];
 
 
