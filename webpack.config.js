@@ -47,7 +47,7 @@ const packPlugins = [
             destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/css`)
           },
           {
-            source: resolveViewPath(`./js/**/custom.*js*`),
+            source: resolveViewPath(`./js/**/custom.js`),
             destination: resolveDevEnv(`./primo-explore/tmp/${VIEW}/js`)
           },
         ]
@@ -117,7 +117,7 @@ const baseWebpackConfig = basePath => merge.smart(
       path: path.resolve(basePath),
       filename: '[name]',
     },
-    devtool: 'source-map',
+    devtool: devMode ? 'eval-source-map' : undefined,
     module: {
       rules: [
         {
@@ -141,12 +141,12 @@ const baseWebpackConfig = basePath => merge.smart(
           ]
         },
         {
-          test: /\.jpe?g$|\.gif$|\.png$/i,
+          test: /\.jpe?g$|\.gif$|\.png|\.ico$/i,
           use: [
             {
               loader: 'file-loader',
               options: {
-                name: '../img/[name].[ext]',
+                name: './img/[name].[ext]',
               }
             },
           ],
@@ -170,7 +170,7 @@ const centralPackageConfig = VIEW !== 'CENTRAL_PACKAGE' && fs.existsSync(central
 module.exports = [
   merge.smart(
     baseWebpackConfig(viewPath),
-    { devServer },
+    !PACK ? { devServer } : {},
     viewWebpackOverride(viewPath)
   ),
   ...(centralPackageConfig && !PACK ? [centralPackageConfig] : [])
