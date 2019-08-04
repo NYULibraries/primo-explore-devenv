@@ -27,6 +27,23 @@ PROXY_SERVER=http://bobcatdev.library.nyu.edu:80 VIEW=NYU [VE='true' SAML='true'
 
 Your developer server will be accessible at `http://localhost:8004/primo-explore/search?vid={VIEW}`
 
+#### Symlinking your views to the devenv
+
+If you maintain your view packages in a separate repository or directory structure, you can symlink your root directory of your views repository to the `primo-explore` directory like so:
+
+```sh
+# In Mac/Linux
+# PWD: primo-explore-devenv
+rm -rf primo-explore
+ln -s /path/to/repos/primo-explore-views ./primo-explore
+```
+
+Simply ensure that your packages conform to the same directory structure of: `primo-explore/custom/{VIEW}/js/main.js`.
+
+Node modules will be smart enough to pick up any intermediary `node_modules` directories and resolve to the closest parent directory. In our case, we use a monorepo structure with [yarn workspaces](https://yarnpkg.com/lang/en/docs/workspaces/), allowing us to 'hoist' common depdencies to a common root located in `primo-explore`. Dependencies are installed in the particular view packages where versions among submodules potentially conflict.
+
+(See our `primo-explore-views` monorepo structure at: [primo-explore-views](https://github.com/NYULibraries/primo-explore-views)).
+
 ### Docker
 
 With Docker and docker-compose installed:
