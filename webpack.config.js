@@ -36,7 +36,7 @@ const packPlugins = [
       },
       {
         copy: [{
-            source: resolveViewPath(`./html/**/home*.html`),
+            source: resolveViewPath(`./html/**/*.html`),
             destination: resolveDevEnv(`./tmp/${VIEW}/html`)
           },
           {
