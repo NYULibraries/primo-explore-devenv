@@ -124,12 +124,13 @@ const baseWebpackConfig = basePath => merge.smart(
     module: {
       rules: [
         {
-          test: /\.js$/i,
+          test: /\.js$/,
           exclude: /node_modules/,
           loader: 'babel-loader',
+          options: require('./babel.config'),
         },
         {
-          test: /\.html$/i,
+          test: /\.html$/,
           exclude: /node_modules/,
           loader: 'raw-loader',
         },

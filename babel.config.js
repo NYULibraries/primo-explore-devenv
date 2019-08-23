@@ -1,4 +1,4 @@
-{
+module.exports = {
   "presets": [
     ["@babel/preset-env", {
       "targets": {
@@ -16,4 +16,4 @@
     "@babel/plugin-transform-runtime",
   ],
   "sourceMaps": "both"
-}
+};
