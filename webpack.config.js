@@ -1,4 +1,4 @@
-let { VIEW, NODE_ENV, PACK } = process.env;
+let { VIEW, NODE_ENV, PACK, LIVE } = process.env;
 NODE_ENV = NODE_ENV || 'production';
 
 const path = require('path');
@@ -15,9 +15,10 @@ const merge = require('webpack-merge');
 const isPackage = PACK === 'true';
 const devMode = NODE_ENV === 'development';
 const prodMode = NODE_ENV === 'production';
-const testMode = NODE_ENV === 'test';
 const stagingMode = NODE_ENV === 'staging';
+const testMode = NODE_ENV === 'test';
 const deploymentMode = prodMode || testMode || stagingMode;
+const isLive = LIVE === 'true' || !deploymentMode;
 
 const devPlugins = [
   // plugins for development environment only
@@ -91,7 +92,8 @@ const devServer = {
   compress: false,
   host: '0.0.0.0',
   port: 8004,
-  hot: false,
+  hot: isLive,
+  liveReload: false,
   before: app => {
     require('./webpack/loadPrimoMiddlewares')(app);
   },
@@ -136,6 +138,9 @@ const baseWebpackConfig = basePath => merge.smart(
           use: [
             {
               loader: MiniCssExtractPlugin.loader,
+              options: {
+                hmr: isLive,
+              }
             },
             'css-loader',
             'sass-loader',

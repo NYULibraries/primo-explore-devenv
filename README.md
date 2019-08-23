@@ -62,6 +62,13 @@ Within the [docker network](https://docs.docker.com/network/), this will be acco
 
 To use HTML as a JavaScript `String` in your code (e.g. for an Angular.js template), `import` and use in your `main.js`
 
+### Live reload
+
+Live reload will automatically refresh the page when changes are made to any fiels associated with the entry `main.js` file(s). Whether or not live reload is enabled responds to environment variables.
+
+`NODE_ENV` is `test`, `staging`, or `production`, then live reload is turned off
+`LIVE` is `true`, this overrides the setting based on `NODE_ENV` and enables live reload.
+
 ### Example
 
 ```js
@@ -100,7 +107,7 @@ app
 @import '~primo-explore-libraryh3lp-widget/css/custom1.css';
 ```
 
-Tree:
+Example tree:
 ```
 ├── primo-explore
 │   ├── custom
