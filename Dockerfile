@@ -17,7 +17,7 @@ RUN cd /tmp && yarn install --frozen-lockfile --ignore-optional \
 
 WORKDIR $INSTALL_PATH
 
-ADD webpack.config.js package.json yarn.lock .babelrc ./
+ADD webpack.config.js package.json yarn.lock ./
 ADD webpack/ ./webpack/
 ADD images/ ./images/
 ADD gulp/primoProxy.js gulp/config.js ./gulp/
