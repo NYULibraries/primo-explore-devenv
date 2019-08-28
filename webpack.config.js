@@ -127,7 +127,25 @@ const baseWebpackConfig = basePath => merge.smart(
           test: /\.js$/,
           exclude: /node_modules/,
           loader: 'babel-loader',
-          options: require('./babel.config'),
+          options: {
+            presets: [
+              ['@babel/preset-env', {
+                targets: {
+                  browsers: [
+                    '>.25%',
+                    'not dead',
+                    'ie >= 11'
+                  ]
+                },
+                useBuiltIns: 'usage',
+                corejs: 3
+              }]
+            ],
+            plugins: [
+              '@babel/plugin-transform-runtime'
+            ],
+            sourceMaps: 'both'
+          }
         },
         {
           test: /\.html$/,
