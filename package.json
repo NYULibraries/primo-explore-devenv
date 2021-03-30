@@ -1,6 +1,6 @@
 {
   "name": "primo-explore-devenv",
-  "version": "1.2.3",
+  "version": "2.0.0",
   "description": "The Exlibris Primo Open Discovery Framework",
   "author": "noamamit92",
   "devDependencies": {
@@ -26,8 +26,12 @@
     "webpack-merge": "^4.2.1"
   },
   "engines": {
-    "node": ">=8"
+    "node": ">=10.0"
   },
+  "browserslist": [
+    "last 2 version",
+    "> 2%"
+  ],
   "repository": "https://github.com/ExLibrisGroup/primo-explore-devenv",
   "scripts": {
     "build": "yarn webpack",
