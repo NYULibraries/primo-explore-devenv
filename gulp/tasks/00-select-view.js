@@ -54,6 +54,7 @@ gulp.task('select-view', (cb) => {
     })
 })
 
+<<<<<<< HEAD:gulp/tasks/createPackage.js
 gulp.task('create-package', ['select-view', 'custom-js','custom-scss','custom-css'], function () {
     const env = process.env.NODE_ENV
     const code = config.view();
@@ -66,3 +67,5 @@ gulp.task('create-package', ['select-view', 'custom-js','custom-scss','custom-cs
         .pipe(zip(`${code}.${new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 12)}.${env === 'production' || !env ? 'production' : env}.zip`))
         .pipe(gulp.dest('./packages/'));
 });
+=======
+>>>>>>> upstream/master:gulp/tasks/00-select-view.js
