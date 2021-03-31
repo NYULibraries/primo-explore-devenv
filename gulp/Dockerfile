@@ -1,4 +1,4 @@
-FROM node:6-slim
+FROM node:10-slim
 
 ENV INSTALL_PATH /app
 ENV PATH $INSTALL_PATH/node_modules/.bin:${PATH}
@@ -22,9 +22,6 @@ ADD . ./gulp/package.json ./gulp/yarn.lock ./
 RUN sed -ie 's@http:\/\/your-server:your-port@'"$PROXY_SERVER"'@g' $INSTALL_PATH/gulp/config.js
 
 EXPOSE 8003 3001
-
-RUN wget --no-check-certificate -q -O - https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh > /tmp/wait-for-it.sh
-RUN chmod a+x /tmp/wait-for-it.sh
 
 WORKDIR $INSTALL_PATH
 
