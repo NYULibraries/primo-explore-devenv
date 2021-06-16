@@ -1,7 +1,28 @@
 # New Primo UI
 
+[![Web Services](https://img.shields.io/badge/Owner-LITS%20Web%20Services-Black.svg)](https://shields.io/) 
 [![Docker Repository on Quay](https://quay.io/repository/nyulibraries/primo-explore-devenv/status "Docker Repository on Quay")](https://quay.io/repository/nyulibraries/primo-explore-devenv)
-[![CircleCI](https://circleci.com/gh/NYULibraries/primo-explore-devenv.svg?style=svg)](https://circleci.com/gh/NYULibraries/primo-explore-devenv)
+[![CircleCI](https://circleci.com/gh/NYULibraries/primo-explore-devenv.svg?style=shield)](https://circleci.com/gh/NYULibraries/primo-explore-devenv)
+
+## What is this?
+
+At NYU we've made a fork of the [ExLibris-maintained proxy](https://github.com/ExLibrisGroup/primo-explore-devenv) made for developing Primo view packages locally and generating packaged in `zip` format for deploy through the Primo Back Office (or VE).
+
+We've made some changes
+
+### What is different from upstream primo-explore-devenv?
+
+- `Docker` - we wrap the dev environment in a container with Docker and docker-compose
+- `webpack` - we forgo using the `gulp` environment setup by ExLibris and use `webpack` instead for compile JS/SCSS as well as running the dev server (via `webpack-dev-server`) and compile the `zip` packages
+  - `webpack.config.js` - all the configs
+  - `package.json` - webpack dependencies, etc. - divergent from the upstream `package.json`
+  - `webpack/loadPrimoMiddlewares.js` - `webpack` will load these dependencies for us from the ExLibris code so we don't have to write our own proxy, etc.
+- `yarn` - we use `yarn` to build our dependencies
+  - `yarn.lock`
+- `quay.io` - our container repository
+  - `script/push_docker.sh` - utils
+- `CircleCI` - we build and push our container images via CircleCI
+  - `.circleci`
 
 ## Setting up the dev environment
 
@@ -11,9 +32,9 @@
 * VE: Set as a string "true" to use VE settings
 * SAML: Set as string "true" to use SAML authentication method
 
-### Local
+### Running locally
 
-With Node.js (>=8) and yarn installed:
+With Node.js (>=10) and yarn installed:
 
 ```sh
 yarn install --frozen-lockfile
@@ -44,7 +65,7 @@ Node modules will be smart enough to pick up any intermediary `node_modules` dir
 
 (See our `primo-explore-views` monorepo structure at: [primo-explore-views](https://github.com/NYULibraries/primo-explore-views)).
 
-### Docker
+### Running with Docker
 
 With Docker and docker-compose installed:
 
@@ -54,7 +75,7 @@ With Docker and docker-compose installed:
 
 On your local machine, the developer server will be accessible at `http://localhost:8004/primo-explore/search?vid={VIEW}`
 
-Within the [docker network](https://docs.docker.com/network/), this will be accordingly be accessible at domian `http://web:8004`
+Within the [docker network](https://docs.docker.com/network/), this will be accordingly be accessible at domain `http://web:8004`
 
 ## JS, (S)CSS, & HTML
 
