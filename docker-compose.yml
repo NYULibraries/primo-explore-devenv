@@ -62,7 +62,7 @@ services:
     image: primo-explore-devenv-gulp
     environment:
       NODE_ENV: ${NODE_ENV-staging}
-    command: yarn create-package --view=${VIEW}
+    command: gulp create-package --view ${VIEW}
     depends_on:
       - web-gulp-legacy
 
