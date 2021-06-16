@@ -36,6 +36,13 @@ services:
       <<: *x-environment
       NODE_ENV: ${NODE_ENV-staging}
     command: yarn create-package
+  
+  yarn:
+    image: node:10
+    working_dir: /app
+    entrypoint: ["yarn"]
+    volumes:
+      - ./:/app
 
   web-gulp-legacy:
     <<: *x-defaults
