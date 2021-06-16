@@ -1,4 +1,5 @@
 const { VIEW, VE, PROXY_SERVER, SAML, CAS } = process.env;
+require('isomorphic-fetch'); // To polyfill use of Response in primoProxy
 const { proxy_function, primoCustomizationsMiddleware } = require('../gulp/primoProxy');
 const origConfig = require('../gulp/config');
 
