@@ -20,3 +20,19 @@ Update root `Dockerfile` to use the correct version of Node from the upstream
 
 Update the `gulp/Dockerfile` to use the correct version of Node from the upstream
 
+## Resolving Issues
+
+It has happened that an upstream change has broken our webpack customizations. For instance in a recent update (as of June 2021) when trying to start up the `webpack-dev-server` we saw the following error:
+
+```
+web_1              | $ webpack-dev-server
+web_1              | /app/node_modules/webpack-dev-server/bin/webpack-dev-server.js:115
+web_1              |     throw err;
+web_1              |     ^
+web_1              | 
+web_1              | ReferenceError: Response is not defined
+web_1              |     at proxy_function (/app/gulp/primoProxy.js:173:15)
+web_1              |     at loadMiddlewares (/app/webpack/loadPrimoMiddlewares.js:22:11)
+```
+
+Traced back to the `primoProxy.js` file and with some Googling we discovered that the `Response` class needed to be polyfilled `isomorphic-fetch` so we installed the package and added `require('isomorphic-fetch');` into the `loadPrimoMiddlewares.js` file before including the `primoProxy.js`.
