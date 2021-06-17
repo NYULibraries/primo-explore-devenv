@@ -1,31 +1,31 @@
-FROM node:6-slim
+FROM node:10-slim
 
 ENV INSTALL_PATH /app
 ENV PATH $INSTALL_PATH/node_modules/.bin:${PATH}
-ENV GULPFILE nyu-gulpfile.js
+ENV GULPFILE gulpfile.js
 ENV VIEW NYU
-ENV PROXY_SERVER http://bobcatdev.library.nyu.edu:80
+ENV PROXY_SERVER https://bobcatdev.library.nyu.edu:443
 
 # Install essentials
 RUN apt-get update -qq && apt-get install -y build-essential unzip
 
 # Install node_modules with yarn
-ADD ./gulp/package.json ./gulp/yarn.lock /tmp/
-RUN cd /tmp && yarn install --frozen-lockfile
+ADD ./gulp/package.json /tmp/
+RUN cd /tmp && \
+    npm install -g gulp && \
+    npm install
 RUN mkdir -p $INSTALL_PATH && cd $INSTALL_PATH && cp -R /tmp/node_modules $INSTALL_PATH
 
 WORKDIR $INSTALL_PATH
 
-# Adds files, overwriting package.json and yarn.lock files
-ADD . ./gulp/package.json ./gulp/yarn.lock ./
+# Adds files, overwriting package.json files
+ADD . ./gulp/package.json ./
 
 RUN sed -ie 's@http:\/\/your-server:your-port@'"$PROXY_SERVER"'@g' $INSTALL_PATH/gulp/config.js
 
 EXPOSE 8003 3001
 
-RUN wget --no-check-certificate -q -O - https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh > /tmp/wait-for-it.sh
-RUN chmod a+x /tmp/wait-for-it.sh
-
 WORKDIR $INSTALL_PATH
 
-CMD [ "/bin/bash", "-c", "yarn start --view=${VIEW}"]
+CMD [ "/bin/bash", "-c", "gulp run --view ${VIEW}"]
+# gulp create-package

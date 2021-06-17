@@ -1,4 +1,6 @@
 var modRewrite = require('connect-modrewrite');
+var fs = require('fs')
+var Promise = require("bluebird");
 var config = require('./config');
 var glob = require('glob');
 const http = require('http');
@@ -168,6 +170,7 @@ var base_path = 'custom/';
 
 function proxy_function(config = originalConfig) {
     var proxyServer = config.PROXY_SERVER;
+    var res = new Response(200, {'content-type': 'text/css'}, Buffer.from(''), '');
     var loginRewriteFlags = (config.getSaml() || config.getCas()) ? 'RL' : 'PL';
 
     return modRewrite([

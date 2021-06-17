@@ -1,7 +1,12 @@
 node_modules/**/*
+**/node_modules/**/*
 npm-debug.log
 .node-version
 primo-explore/custom/
 primo-explore/tmp/
+
+!primo-explore/custom/.gitignore
+!primo-explore/tmp/.gitignore
+
 .idea/
 package-lock.json

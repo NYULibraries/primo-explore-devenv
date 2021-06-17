@@ -3,6 +3,7 @@
 let autoprefixer = require('gulp-autoprefixer');
 let config = require('../config').buildParams;
 let useScss = require('../config').getUseScss;
+let isVe = require('../config').getVe;
 let proxy_server = require('../config').PROXY_SERVER
 let gulp = require('gulp');
 let cssnano = require('gulp-cssnano');
@@ -22,7 +23,7 @@ let stylesBaseDir = 'www/styles/partials';
 let templateFile = stylesBaseDir+'/_variables.tmpl.scss';
 let OTBColorsFile = stylesBaseDir+'/../colors.json';
 let scssFile = '_variables.scss';
-var runSequence = require('run-sequence');
+var runSequence = require('gulp4-run-sequence');
 let  fs = require('fs');
 let del = require('del');
 let lodashMerge = require('lodash/merge');
@@ -32,8 +33,14 @@ gulp.task('cleanup',()=> del(['www']));
 
 gulp.task('extract-scss-files', ()=> {
     let proxy_server = require('../config').PROXY_SERVER;
-    console.log(proxy_server+'/primo-explore/lib/scsss.tar.gz');
-    let url = proxy_server+'/primo-explore/lib/scsss.tar.gz';
+    let prefix;
+    if (isVe()) {
+        prefix = '/discovery';
+    } else {
+        prefix = '/primo-explore';
+    }
+    let url = proxy_server+prefix+'/lib/scsss.tar.gz';
+    console.log(url);
     var headers = {
         /*'Accept-Encoding': 'gzip'*/
     };
@@ -68,8 +75,7 @@ gulp.task('compile-scss',() => {
         }))
         // .pipe(sourcemaps.init())
         .pipe(sass())
-        .pipe(autoprefixer({
-            browsers: ['last 2 versions'],
+        .pipe(autoprefixer({    
             cascade: false
         }));
     let colorStream = allCss
@@ -84,7 +90,7 @@ gulp.task('compile-scss',() => {
 });
 
 gulp.task('app-css', (cb) => {
-	runSequence('extract-scss-files','color-variables', 'compile-scss', 'cleanup', cb);
+    runSequence('extract-scss-files','color-variables', 'compile-scss', 'cleanup', cb);
 });
 
 /**
@@ -93,13 +99,14 @@ gulp.task('app-css', (cb) => {
  * Please note. The logic of this task will only execute if the run task is
  * executed with the "useScss" parameter, e.g.: gulp run --view UNIBZ --useScss
  */
-gulp.task("watch-custom-scss", ['select-view'], () => {
+gulp.task("watch-custom-scss", gulp.series('select-view', (cb) => {
 	if (!useScss()) {
-		return;
+        cb();
+        return;
 	}
-
-	gulp.watch([config.customScssDir() + "/**/*.scss"], ["custom-scss"]);
-});
+    gulp.watch([config.customScssDir() + "/**/*.scss"], {interval: 1000, usePolling: true}, gulp.series('custom-scss'));
+    cb();
+}));
 
 /**
  * Compiles the custom scss to a css file called custom-scss-compiled.css which
@@ -110,14 +117,15 @@ gulp.task("watch-custom-scss", ['select-view'], () => {
  * Please note. The logic of this task will only execute if the run task is
  * executed with the "useScss" parameter, e.g.: gulp run --view UNIBZ --useScss
  */
-gulp.task("custom-scss", ['select-view'], () => {
+gulp.task("custom-scss", gulp.series('select-view', (cb) => {
 	if (!useScss()) {
+	    cb();
 		return;
 	}
 
 	gutil.log("Start Creating custom CSS from custom SCSS");
 
-	let customScss = gulp.src(config.customScssMainPath())
+	let customScss = gulp.src(config.customScssMainPath(),{allowEmpty:true})
 		.pipe(plumber({
 				errorHandler: function (err) {
 						console.log('1111111' + err);
@@ -127,13 +135,12 @@ gulp.task("custom-scss", ['select-view'], () => {
 		// .pipe(sourcemaps.init())
 		.pipe(sass())
 		.pipe(autoprefixer({
-				browsers: ['last 2 versions'],
 				cascade: false
 		}))
 		.pipe(rename("custom-scss-compiled.css"))
 		.pipe(gulp.dest(config.viewCssDir()));
 
 	gutil.log("End Creating custom CSS from custom SCSS");
-
+    cb();
 	return customScss;
-});
+}));

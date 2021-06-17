@@ -1,5 +1,5 @@
 x-environment: &x-environment
-  PROXY_SERVER: http://bobcatdev.library.nyu.edu:80
+  PROXY_SERVER: https://bobcatdev.library.nyu.edu:443
   NODE_ENV: ${NODE_ENV-development}
   VIEW: ${VIEW-NYU}
   VE:
@@ -21,7 +21,7 @@ x-defaults: &x-defaults
     - 8004:8004
     - 3001:3001
   # volumes:
-  # - /path/to/primo-explore:/app/primo-explore
+  #   - ./primo-explore:/app/primo-explore
 
 version: '3.7'
 services:
@@ -36,10 +36,17 @@ services:
       <<: *x-environment
       NODE_ENV: ${NODE_ENV-staging}
     command: yarn create-package
+  
+  yarn:
+    image: node:10
+    working_dir: /app
+    entrypoint: ["yarn"]
+    volumes:
+      - ./:/app
 
   web-gulp-legacy:
     <<: *x-defaults
-    build:
+    build: 
       context: .
       dockerfile: gulp/Dockerfile
     image: primo-explore-devenv-gulp
@@ -49,13 +56,14 @@ services:
 
   create-package-gulp-legacy:
     <<: *x-defaults
-    build:
+    build: 
       context: .
       dockerfile: gulp/Dockerfile
     image: primo-explore-devenv-gulp
     environment:
       NODE_ENV: ${NODE_ENV-staging}
-    command: yarn create-package --view=${VIEW}
+      VIEW: ${VIEW-NYU}
+    command: ["sh", "-c", "gulp create-package --view $${VIEW}"]
     depends_on:
       - web-gulp-legacy
 
