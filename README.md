@@ -43,7 +43,7 @@ yarn install --frozen-lockfile
 Then start the server up:
 
 ```
-PROXY_SERVER=http://bobcatdev.library.nyu.edu:80 VIEW=NYU [VE='true' SAML='true'] yarn start
+PROXY_SERVER=https://bobcatdev.library.nyu.edu:443 VIEW=NYU [VE='true' SAML='true'] yarn start
 ```
 
 Your developer server will be accessible at `http://localhost:8004/primo-explore/search?vid={VIEW}`
