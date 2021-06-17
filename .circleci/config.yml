@@ -1,6 +1,8 @@
 docker-defaults: &docker-defaults
   docker:
     - image: quay.io/nyulibraries/circleci_docker:18.06.1-dc-1.23.2-0
+      environment:
+        - PROJECT_NAME=primo-explore-devenv
   working_directory: ~/app
 
 build_docker: &build_docker
@@ -20,6 +22,14 @@ push_docker: &push_docker
     name: Push Docker
     command: |
       script/push_docker.sh
+  
+push_tagged_version: &push_tagged_version
+  run:
+    name: Push images to repository
+    command: |
+      docker tag primo-explore-devenv quay.io/nyulibraries/${PROJECT_NAME}:${CIRCLE_TAG}
+      docker push quay.io/nyulibraries/${PROJECT_NAME}:${CIRCLE_TAG}
+
 
 version: 2
 jobs:
@@ -27,13 +37,29 @@ jobs:
     <<: *docker-defaults
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - <<: *auth_quay
       - <<: *build_docker
       - <<: *push_docker
+  
+  tag-version:
+    <<: *docker-defaults
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 19.03.13
+      - <<: *auth_quay
+      - <<: *push_tagged_version
 
 workflows:
   version: 2
   build:
     jobs:
       - build
+      - tag-version:
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            ignore: /.*/
