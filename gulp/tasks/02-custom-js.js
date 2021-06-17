@@ -54,24 +54,6 @@ const getBabelConfig = () => {
     });
 }
 
-const browserifyBabelPlugins = [
-    "transform-html-import-to-string"
-];
-
-const defaultPlugins = [
-    ["transform-define", {
-        "process.env.NODE_ENV": process.env.NODE_ENV || "production",
-    }]
-];
-
-function getBabelConfig() {
-    return {
-        presets: ["es2015"],
-        plugins: defaultPlugins.concat(config.getBrowserify() ? browserifyBabelPlugins : []),
-        sourceMaps: config.getBrowserify(),
-    };
-}
-
 function buildByConcatination() {
     return gulp.src([buildParams.customModulePath(),buildParams.mainPath(),buildParams.customNpmJsPath(),buildParams.customNpmDistPath(),'!'+buildParams.customPath(),'!'+buildParams.customNpmJsModulePath(),'!'+buildParams.customNpmJsCustomPath()],{allowEmpty:true})
         .pipe(concat(buildParams.customFile))
