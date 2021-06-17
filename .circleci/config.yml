@@ -50,13 +50,17 @@ jobs:
       - setup_remote_docker:
           version: 19.03.13
       - <<: *auth_quay
+      - <<: *build_docker
       - <<: *push_tagged_version
 
 workflows:
   version: 2
   build:
     jobs:
-      - build
+      - build:
+          filters:
+            branches:
+              only: /.*/
       - tag-version:
           filters:
             tags:
