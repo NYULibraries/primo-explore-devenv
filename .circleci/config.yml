@@ -64,6 +64,6 @@ workflows:
       - tag-version:
           filters:
             tags:
-              only: /^v.*/
+              only: /.*/
             branches:
               ignore: /.*/
